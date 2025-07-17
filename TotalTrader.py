@@ -1,13 +1,34 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 from tkinter import font as tkFont
+import sqlite3
 
 # Create the main window
 root = tk.Tk()
 root.title("Black Tkinter Window")
 
 
+def sets_up():
+    conn = sqlite3.connect("portfolio.db")
+    cursor = conn.cursor()
 
+    # Create users table if it doesn't exist
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        bought_price REAL NOT NULL,
+        current_price REAL NOT NULL,
+        expire BOOLEAN NOT NULL,
+        expire_date TEXT,
+        expire_time TEXT,
+        percentage REAL GENERATED ALWAYS AS (
+            (CAST(current_price - bought_price AS REAL) / bought_price) * 100
+        ) STORED);
+    """)
+    conn.commit()
+    conn.close()
 def make_ui():
     # background colour is #191c27
     screen_width = root.winfo_screenwidth()
@@ -121,5 +142,6 @@ def make_ui():
 
 
 # Run the application
+sets_up()
 make_ui()
 root.mainloop()
